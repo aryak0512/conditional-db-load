@@ -43,20 +43,18 @@ public class DatabaseConfig {
 
     @Bean
     public EntityManagerFactoryBuilder entityManagerFactoryBuilder() {
-        return new EntityManagerFactoryBuilder(new HibernateJpaVendorAdapter(), new HashMap<>(), null);
+        var props = Map.of("spring.jpa.hibernate.ddl-auto", "update");
+        return new EntityManagerFactoryBuilder(new HibernateJpaVendorAdapter(), props, null);
     }
 
     @Bean
     public LocalContainerEntityManagerFactoryBean entityManagerFactory(EntityManagerFactoryBuilder builder, DataSource dataSource) {
         Map<String, Object> properties = new HashMap<>();
-        properties.put("hibernate.dialect", "org.hibernate.dialect.MySQL8Dialect");
+        properties.put("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
         properties.put("hibernate.hbm2ddl.auto", "update");
 
-        return builder
-                .dataSource(dataSource)
-                .packages("com.aryak.cs")  // specify package containing JPA entities
-                .properties(properties)
-                .build();
+        return builder.dataSource(dataSource).packages("com.aryak.cs")  // specify package containing JPA entities
+                .properties(properties).build();
     }
 
     @Bean
