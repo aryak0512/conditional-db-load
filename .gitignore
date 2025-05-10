@@ -1,0 +1,54 @@
+# Maven target directory
+/target/
+
+# IntelliJ IDEA
+/.idea/
+/*.iml
+*.iws
+*.ipr
+out/
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# NetBeans
+/nbproject/private/
+/build/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# VS Code
+.vscode/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Environment & config
+.env
+*.local
+application-*.yml
+application-*.properties
+
+# Backup files
+*.swp
+*~
+*.bak
+
+# Spring Boot specific
+/spring-boot-loader/
+/dependency/
+/build/
+/.mvn/
+.mvn/wrapper/maven-wrapper.jar
+
+# Other
+*.class
