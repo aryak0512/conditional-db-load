@@ -1,0 +1,101 @@
+Kerberos
+==========
+In kerberos client and server authenticate each other without password
+
+We generate TGTs by using kinit user@example.com and then prompt password
+
+Machines/services cannot answer prompt password. They use keytab file.
+We need to generate keytab files for DBs etc.
+The credentials of server are stored in keytab file in encrypted format
+
+
+Initial setup
+
+create a file krb5.conf at /etc with content :
+
+[libdefaults]
+    default_realm = LOCALDEV.COM
+    dns_lookup_realm = false
+    dns_lookup_kdc = false
+
+[realms]
+    LOCALDEV.COM = {
+        kdc = localhost
+        admin_server = localhost
+    }
+
+[domain_realm]
+    .localdev.com = LOCALDEV.COM
+    localdev.com = LOCALDEV.COM
+
+export KRB5_CONFIG=/etc/krb5.conf
+
+
+
+Keytab can be genrated using commands:
+On your Mac (as KDC admin), run: kadmin.local
+
+then run :
+
+1. addprinc -randkey postgres/localhost@LOCALDEV.COM
+
+Output :
+kadmin.local:  addprinc -randkey postgres/localhost@LOCALDEV.COM
+No policy specified for postgres/localhost@LOCALDEV.COM; defaulting to no policy
+Principal "postgres/localhost@LOCALDEV.COM" created.
+
+
+2. ktadd -k postgres.keytab postgres/localhost@LOCALDEV.COM
+
+
+3. sudo klist -k postgres.keytab
+Keytabs are listed [128 and 256 bit]
+
+klist - shows all your TGTs
+This TGT is exchanged for a service ticket [to connect to a service like DB]
+The server (using its keytab) verifies the ticket and allows the connection
+
+
+Part 2 : Postgres with kerberos
+
+docker run --name postgres-kerberos \
+  -e POSTGRES_USER=user1 \
+  -e POSTGRES_DB=testdb \
+  -e POSTGRES_HOST_AUTH_METHOD=trust \
+  -p 5434:5432 \
+  -v /etc/postgres.keytab:/etc/postgresql/postgres.keytab:ro \
+  -v $(pwd)/postgresql.conf:/etc/postgresql/postgresql.conf:ro \
+  -v $(pwd)/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro \
+  postgres:16 \
+  postgres -c config_file=/etc/postgresql/postgresql.conf
+
+
+For Postgres DB user : user1
+
+For allowing user to generate hibernate tables on the fly:
+GRANT ALL PRIVILEGES ON DATABASE mydb TO user1;
+
+
+Java and IntelliJ VM options :
+-Djava.security.krb5.conf=/etc/krb5.conf
+-Djava.security.auth.login.config=/Users/aryak/Downloads/cache-sql/src/main/resources/postgres/jaas.conf
+
+JAAS is a gateway to access Kerberos from java code [JAAS is an API , Kerberos is a protocol]
+
+Questions ?
+- Why is java code (a client) providing keytab of database
+
+
+Creating new user "testuser":
+
+Step 1 :
+sudo kadmin.local
+
+Step 2 : Create the principal
+addprinc testuser@LOCALDEV.COM
+
+Step 3 : Generate keytab for this user
+ktadd -k testuser.keytab testuser@LOCALDEV.COM
+
+
+
