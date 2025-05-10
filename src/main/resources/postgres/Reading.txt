@@ -82,10 +82,6 @@ Java and IntelliJ VM options :
 
 JAAS is a gateway to access Kerberos from java code [JAAS is an API , Kerberos is a protocol]
 
-Questions ?
-- Why is java code (a client) providing keytab of database
-
-
 Creating new user "testuser":
 
 Step 1 :
@@ -98,4 +94,10 @@ Step 3 : Generate keytab for this user
 ktadd -k testuser.keytab testuser@LOCALDEV.COM
 
 
+Create this user in Postgres:
+CREATE USER testuser WITH PASSWORD 'password';
+ALTER USER testuser SUPERUSER ;
+SELECT * FROM pg_user;
+
+Modify jaas.conf to point to new user.
 
